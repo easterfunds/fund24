@@ -1,139 +1,476 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Firebase Search Suggestions</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Firebase Search Suggestions</title>
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    .search-container {
+      position: relative;
+      width: 300px;
+    }
+    .search-input {
+      width: 100%;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+    .suggestions {
+      position: absolute;
+      border: 1px solid #ccc;
+      background: #fff;
+      width: 100%;
+      max-height: 150px;
+      overflow-y: auto;
+      z-index: 1000;
+    }
+    .suggestion {
+      padding: 10px;
+      cursor: pointer;
+    }
+    .suggestion:hover {
+      background: #f0f0f0;
+    }
+    .details {
+      margin-top: 20px;
+      padding: 10px;
+      border: 1px solid #ccc;
+    }
+    .checkbox-container {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr); /* 4 columns layout */
+        gap: 15px; /* Space between checkboxes */
+        max-width: 200px;
+        margin: 20px auto;
+      }
+  
+      input[type="checkbox"] {
+        /* Hide the default checkbox */
+        appearance: none;
+        -webkit-appearance: none;
+        width: 40px;
+        height: 40px;
+        border: 2px solid #ccc;
+        border-radius: 8px;
+        background-color: red; /* Default color: red */
+        cursor: pointer;
+        position: relative;
+        font-family: Arial, sans-serif;
+        font-weight: bold;
+        color: white;
+        font-size: 10px;
+        text-align: center;
+        line-height: 60px;
+        transition: background-color 0.3s ease, border-color 0.3s ease;
+      }
+  
+      input[type="checkbox"]:checked {
+        background-color: green;
+        border-color: green;
+      }
+  
+      input[type="checkbox"]::after {
+        content: attr(data-label); 
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white; 
+      }
+      #updateFund{
+        margin-top: 20px;
+        margin-right: 20px;
+        padding: 5px 10px;
+        border-radius: 8px;
+        background-color: rgb(193, 255, 155);
+        right: 0;
+        position: absolute;
+      }
+      #updateFund:hover{
+        cursor: pointer;
+      }
+      #editData{
+        margin-top: 20px;
+        margin-right: 20px;
+        padding: 5px 10px;
+        border-radius: 8px;
+        background-color: antiquewhite;
+        right: 60px;
+        position: absolute;
+      }
+      #editData:hover{
+        cursor: pointer;
+      }
+      #tbl_his{
+        width: 100%;
+        font-size: 13px;
+        text-align: center;
+        border-collapse: collapse;
+      }
+      #tbl_his td{
+        font-size: 9px;
+
+      }
+
+      #tbl_his td, th{
+        padding: 10px;
         
-        .search-container {
-            position: relative;
-            width: 300px;
-        }
+      }
+
+      #tbl_data{
+        margin-top: 30px;
+      }
+
+      #inpNote{
+        width: 100%;
         
-        .search-input {
-            width: 100%;
-            padding: 10px;
-            box-sizing: border-box;
-        }
-        
-        .suggestions {
-            position: absolute;
-            border: 1px solid #ccc;
-            background: #fff;
-            width: 100%;
-            max-height: 150px;
-            overflow-y: auto;
-            z-index: 1000;
-        }
-        
-        .suggestion {
-            padding: 10px;
-            cursor: pointer;
-        }
-        
-        .suggestion:hover {
-            background: #f0f0f0;
-        }
-        
-        .details {
-            margin-top: 20px;
-            padding: 10px;
-            border: 1px solid #ccc;
-        }
-        
-        .checkbox-container {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            /* 4 columns layout */
-            gap: 15px;
-            /* Space between checkboxes */
-            max-width: 200px;
-            margin: 20px auto;
-        }
-        
-        input[type="checkbox"] {
-            /* Hide the default checkbox */
-            appearance: none;
-            -webkit-appearance: none;
-            width: 40px;
-            height: 40px;
-            border: 2px solid #ccc;
-            border-radius: 8px;
-            background-color: red;
-            /* Default color: red */
-            cursor: pointer;
-            position: relative;
-            font-family: Arial, sans-serif;
-            font-weight: bold;
-            color: white;
-            font-size: 10px;
-            text-align: center;
-            line-height: 60px;
-            transition: background-color 0.3s ease, border-color 0.3s ease;
-        }
-        
-        input[type="checkbox"]:checked {
-            background-color: green;
-            /* Checked color: green */
-            border-color: green;
-        }
-        
-        input[type="checkbox"]::after {
-            content: attr(data-label);
-            /* Set the content to the label specified in the data-label attribute */
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: white;
-            /* Label color */
-        }
-    </style>
+      }
+  </style>
 </head>
-
 <body>
-    <div class="search-container">
-        <input type="text" id="search" class="search-input" placeholder="Search...">
-        <div id="suggestions" class="suggestions"></div>
-    </div>
-    <div id="details" class="details">Search a name to view details.</div>
-    <div class="checkbox-container">
-        <input type="checkbox" id="mar" data-label="Mar">
-        <input type="checkbox" id="apr" data-label="Apr">
-        <input type="checkbox" id="may" data-label="May">
-        <input type="checkbox" id="jun" data-label="Jun">
-        <input type="checkbox" id="jul" data-label="Jul">
-        <input type="checkbox" id="aug" data-label="Aug">
-        <input type="checkbox" id="sep" data-label="Sep">
-        <input type="checkbox" id="oct" data-label="Oct">
-        <input type="checkbox" id="nov" data-label="Nov">
-        <input type="checkbox" id="dec" data-label="Dec">
-        <input type="checkbox" id="jan" data-label="Jan">
-        <input type="checkbox" id="feb" data-label="Feb">
-    </div>
+  <div class="search-container">
+    <input type="text" id="search" class="search-input" placeholder="Search...">
+    <div id="suggestions" class="suggestions"></div>
+  </div>
+  <input type="button" value="save" id="updateFund" disabled>
+  <input type="button" value="edit" id="editData" disabled>
+  <div id="details" class="details">Search a name to view details.</div>
+  <div class="checkbox-container">
+    <input type="checkbox" id="mar" data-label="Mar">
+    <input type="checkbox" id="apr" data-label="Apr">
+    <input type="checkbox" id="may" data-label="May">
+    <input type="checkbox" id="jun" data-label="Jun">
+    <input type="checkbox" id="jul" data-label="Jul">
+    <input type="checkbox" id="aug" data-label="Aug">
+    <input type="checkbox" id="sep" data-label="Sep">
+    <input type="checkbox" id="oct" data-label="Oct">
+    <input type="checkbox" id="nov" data-label="Nov">
+    <input type="checkbox" id="dec" data-label="Dec">
+    <input type="checkbox" id="jan" data-label="Jan">
+    <input type="checkbox" id="feb" data-label="Feb">
+  </div>
+  <div class="inp_note">
+    <textarea name="" id="inpNote" placeholder="notes"></textarea>
+  </div>
+  <div class="fund-hist" id="fund_hist">
 
-    <script type="module">
-        // Firebase configuration import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js"; import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-analytics.js"; const firebaseConfig = { apiKey: "AIzaSyD-brG_FyYAiSCw571sSIrq0t01fTdDBag",
-        authDomain: "funds-de8ce.firebaseapp.com", databaseURL: "https://funds-de8ce-default-rtdb.firebaseio.com", projectId: "funds-de8ce", storageBucket: "funds-de8ce.firebasestorage.app", messagingSenderId: "610730236686", appId: "1:610730236686:web:d52dd5c30ca1c1d441955f",
-        measurementId: "G-7WQVJVM4J5" }; // Initialize Firebase const app = initializeApp(firebaseConfig); // const database = firebase.database(); import {getDatabase, ref, child, get, set, update, remove} from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
-        const db = getDatabase(); // DOM Elements const searchInput = document.getElementById('search'); const suggestionsContainer = document.getElementById('suggestions'); const detailsContainer = document.getElementById('details'); // get all const
-        fundsRef = ref(db,'funds'); let fundsData = {}; get(fundsRef) .then((snapshot) => { if (snapshot.exists()) { //const fundsData = snapshot.val(); fundsData = snapshot.val() || {}; //console.log(fundsData); // Logs the retrieved data } else { console.log("No
-        data available"); } }) .catch((error) => { console.error("Error fetching data:", error); }); // Update suggestions searchInput.addEventListener('input', () => { const query = searchInput.value.toLowerCase(); suggestionsContainer.innerHTML = '';
-        if (query) { Object.keys(fundsData).forEach(name => { if (name.toLowerCase().includes(query)) { const suggestion = document.createElement('div'); suggestion.classList.add('suggestion'); suggestion.textContent = name; suggestion.addEventListener('click',
-        () =>{ showDetails(name); showMonthDetails(name); } ); suggestionsContainer.appendChild(suggestion); } }); } }); // Show details of the selected name function showDetails(name) { const details = fundsData[name]; const name_ = details['name'];
-        const no_funds = details['no']; const phn = details['phn']; detailsContainer.innerHTML = `
-        <h3>${name}</h3>`; detailsContainer.innerHTML += `
-        <h3>${no_funds}</h3>`; detailsContainer.innerHTML += `
-        <h3>${phn}</h3>`; suggestionsContainer.innerHTML = ''; searchInput.value = name; } // months function showMonthDetails(name){ const sample_month_data = { "mon":"Mar", "date":"", "note":"", }; const details = fundsData[name]; const months = details['month'];
-        //console.log(months); for }
-    </script>
+  </div>
+  
+
+  <script type="module">
+    // Firebase configuration
+
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-analytics.js";
+
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyD-brG_FyYAiSCw571sSIrq0t01fTdDBag",
+        authDomain: "funds-de8ce.firebaseapp.com",
+        databaseURL: "https://funds-de8ce-default-rtdb.firebaseio.com",
+        projectId: "funds-de8ce",
+        storageBucket: "funds-de8ce.firebasestorage.app",
+        messagingSenderId: "610730236686",
+        appId: "1:610730236686:web:d52dd5c30ca1c1d441955f",
+        measurementId: "G-7WQVJVM4J5"
+      };
+
+
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+   // const database = firebase.database();
+
+   import {getDatabase, ref, child, get, set, update, remove} from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+    const db = getDatabase();
+
+    // DOM Elements
+    const searchInput = document.getElementById('search');
+    const suggestionsContainer = document.getElementById('suggestions');
+    const detailsContainer = document.getElementById('details');
+    const fundHist = document.getElementById('fund_hist');
+
+// get all 
+    const fundsRef = ref(db,'funds');
+    let fundsData = {};
+    let name_ = '';
+
+    get(fundsRef)
+  .then((snapshot) => {
+    if (snapshot.exists()) {
+      //const fundsData = snapshot.val();
+      fundsData = snapshot.val() || {};
+      //console.log(fundsData); // Logs the retrieved data
+    } else {
+      console.log("No data available");
+    }
+  })
+  .catch((error) => {
+    console.error("Error fetching data:", error);
+  });
+    
+
+    // Update suggestions
+    searchInput.addEventListener('input', () => {
+      const query = searchInput.value.toLowerCase();
+      suggestionsContainer.innerHTML = '';
+
+      if (query) {
+        Object.keys(fundsData).forEach(name => {
+          if (name.toLowerCase().includes(query)) {
+            const suggestion = document.createElement('div');
+            suggestion.classList.add('suggestion');
+            suggestion.textContent = name;
+            suggestion.addEventListener('click', () =>{
+                name_ = name;
+                showDetails(name);
+                showMonthDetails(name);
+
+                const upd = document.getElementById("updateFund");
+            
+                upd.disabled = !upd.disabled;
+
+                const edt = document.getElementById("editData");
+            
+                edt.disabled = !edt.disabled;
+                
+            } );
+            suggestionsContainer.appendChild(suggestion);
+          }
+        });
+      }
+    });
+
+    function showDetails(name) {
+      const details = fundsData[name];
+      const name_ = details['name'];
+      const no_funds = details['no'];
+      const phn = details['phn'];
+      const tot_ = details['amount']['total'];
+      const int_tot_ = details['amount']['int_total'];
+
+
+    const checkboxes = document.querySelectorAll('.checkbox-container input[type="checkbox"]');
+
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = false;
+    });
+
+    fundHist.innerHTML = '';
+
+
+      const sample_month_data = {
+        "mar": { "name": "mar", "date": "", "note": "" },
+        "apr": { "name": "apr", "date": "", "note": "" },
+        "may": { "name": "may", "date": "", "note": "" },
+        "jun": { "name": "jun", "date": "", "note": "" },
+        "jul": { "name": "jul", "date": "", "note": "" },
+        "aug": { "name": "aug", "date": "", "note": "" },
+        "sep": { "name": "sep", "date": "", "note": "" },
+        "oct": { "name": "oct", "date": "", "note": "" },
+        "nov": { "name": "nov", "date": "", "note": "" },
+        "dec": { "name": "dec", "date": "", "note": "" },
+        "jan": { "name": "jan", "date": "", "note": "" },
+        "feb": { "name": "feb", "date": "", "note": "" }
+      };
+    //const paid_month_count = Object.keys(sample_month_data).length;
+    const paid_month_count = Object.values(details['month']).filter(m => m.flag === true).length;
+
+    
+
+      const amnt = no_funds * 100;
+      const tot = amnt * paid_month_count;
+      const tot_int = tot + tot * 25/100;
+
+
+
+      //detailsContainer.innerHTML = `<h3>${name}</h3>`;
+      detailsContainer.innerHTML = `
+            <table id='tbl_data'>
+                <tr>
+                    <th>Name : </th>
+                    <td>${name}</td>
+                </tr>
+                <tr>
+                    <th>Funds : </th>
+                    <td><input type="text" value="${no_funds}"  id="no_edt" disabled></td>
+                </tr>
+                <tr>
+                    <th>Phone : </th>
+                    <td><input type="text" value="${phn}"  id="ph_edt" disabled></td>
+                </tr>
+                <tr>
+                    <th>Months : </th>
+                    <td>${paid_month_count}</td>
+                </tr>
+                <tr>
+                    <th>Total : </th>
+                    <td>${tot}</td>
+                </tr>
+                <tr>
+                    <th>Total + 25% : </th>
+                    <th style="color:dodgerblue;font-size:24px">${tot_int}</th>
+                </tr>
+            </table>
+            `;
+
+      suggestionsContainer.innerHTML = '';
+      searchInput.value = name;
+    }
+
+    // months
+    function showMonthDetails(name){
+
+        const details = fundsData[name];
+        const months = details['month'];
+
+        //console.log(months)
+
+        let tableHTML = "<table id='tbl_his'>";
+            tableHTML += `
+                    <tr>
+                        <th>Month</th>
+                        <th>Date</th>
+                        <th>Note</th>
+                    </tr>
+                    `;
+
+        /*Object.keys(months).forEach(key => {
+            //console.log(sample_month_data[key]);
+
+            Object.keys(months[key]).forEach(mon_val => {
+                if(mon_val == 'flag'){
+                    document.getElementById(key).checked = months[key]['flag'];
+                }
+                
+            });
+            tableHTML += `
+                    <tr>
+                        <th>${months[key]['name']}</th>
+                        <td>${months[key]['date']}</td>
+                        <td>${months[key]['note']}</td>
+                    </tr>
+                    `;
+
+        });*/
+
+        // Sort keys based on the 'order' property
+        Object.keys(months)
+        .filter(key => key !== 'order') 
+        .sort((a, b) => months[a].order - months[b].order)
+        .forEach(key => {
+            Object.keys(months[key]).forEach(mon_val => {
+                if (mon_val === 'flag') {
+                    document.getElementById(key).checked = months[key]['flag'];
+                }
+            });
+
+            tableHTML += `
+                <tr>
+                    <th>${months[key]['name']}</th>
+                    <td>${months[key]['date']}</td>
+                    <td>${months[key]['note']}</td>
+                </tr>
+            `;
+        });
+
+
+    
+        tableHTML += "</table>";
+
+        fundHist.innerHTML = tableHTML;
+    }
+
+    document.querySelector('#updateFund').addEventListener('click', () => updateFund());
+    document.querySelector('#editData').addEventListener('click', () => {
+        const table = document.getElementById('tbl_data');
+        const inputs = table.querySelectorAll('input');
+        inputs.forEach(input => {
+        input.disabled = false;
+    });
+    });
+    function updateFund(){
+
+            const table = document.getElementById('tbl_data');
+            const inputs = table.querySelectorAll('input');
+                    inputs.forEach(input => {
+                    input.disabled = true;
+                });
+
+            const no_edt_val_ = document.getElementById('no_edt').value;
+            const ph_edt_val_ = document.getElementById('ph_edt').value;
+
+            const details = fundsData[name_];
+            //const no_funds = details['no'];
+            const no_funds = no_edt_val_;
+
+            const paid_month_count = Object.values(details['month']).filter(m => m.flag === true).length;
+
+
+
+            const amnt = no_funds * 100;
+            const tot = amnt * paid_month_count;
+            const tot_int = tot + tot * 25/100;
+
+            const amnt_dict = {"total": tot, "int_total": tot_int};
+            
+            fundsData[name_]['phn'] = ph_edt_val_;
+            fundsData[name_]['no'] = no_edt_val_;
+
+        
+            update(ref(db, `funds/${name_}`), {
+                month: fundsData[name_]['month'],
+                amount: amnt_dict,
+                no:no_edt_val_,
+                phn:ph_edt_val_
+
+            }).then(()=>{
+                alert("fund updated")
+            }).catch((error)=>{
+                console.log(error);
+            })
+
+            showDetails(name_);
+            showMonthDetails(name_);
+
+            
+            
+
+        }
+
+    function handleCheckboxChange(event) {
+        const checkbox = event.target;
+        const now = new Date();
+        const day = String(now.getDate()).padStart(2, '0');         // Add leading zero
+        const month = String(now.getMonth() + 1).padStart(2, '0');  // Add leading zero
+        const year = String(now.getFullYear()).slice(-2);           // Get last two digits of the year
+        let hours = now.getHours();                                 // Get hours (0-23)
+        const minutes = String(now.getMinutes()).padStart(2, '0');  // Add leading zero
+        const amPm = hours >= 12 ? 'PM' : 'AM';                     // Determine AM/PM
+
+        hours = hours % 12 || 12; // Convert 0 to 12 and adjust for 12-hour clock
+        const formattedHours = String(hours).padStart(2, '0'); // Add leading zero
+
+        const formattedDateTime = `${day}-${month}-${year} ${formattedHours}:${minutes} ${amPm}`;
+
+        const inp_note_val = document.getElementById('inpNote').value;
+        console.log(inp_note_val);
+
+        fundsData[name_]['month'][checkbox.id]['flag'] = checkbox.checked ? true : false;
+        fundsData[name_]['month'][checkbox.id]['date'] = formattedDateTime;
+        fundsData[name_]['month'][checkbox.id]['note'] = inp_note_val;
+        console.log(fundsData[name_]['month'])
+        }
+    
+        // Select all checkboxes and add event listeners
+        const checkboxes = document.querySelectorAll('.checkbox-container input[type="checkbox"]');
+        checkboxes.forEach((checkbox) => {
+        checkbox.addEventListener('change', handleCheckboxChange);
+        });
+  </script>
 </body>
-
 </html>

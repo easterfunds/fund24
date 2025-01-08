@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Fund</title>
+</head>
+<body>
+    <h1>New Fund</h1>
+    <form id="fundsForm">
+        <table>
+            <tr>
+                <th>Name</th>
+                <td><input type="text" id="name_inp" ></td>
+            </tr>
+            <tr>
+                <th>Fund No.</th>
+                <td><input type="number" id="number_inp" ></td>
+            </tr>
+            <tr>
+                <th>Phone</th>
+                <td><input type="text" id="phn_inp" ></td>
+            </tr>
+            <tr>
+                <td colspan="2"><input type="button" value="done" id="add"/></td>
+            </tr>
+        </table>
+    </form>
+
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-analytics.js";
+        // TODO: Add SDKs for Firebase products that you want to use
+        // https://firebase.google.com/docs/web/setup#available-libraries
+      
+        // Your web app's Firebase configuration
+        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+        const firebaseConfig = {
+          apiKey: "AIzaSyD-brG_FyYAiSCw571sSIrq0t01fTdDBag",
+          authDomain: "funds-de8ce.firebaseapp.com",
+          databaseURL: "https://funds-de8ce-default-rtdb.firebaseio.com",
+          projectId: "funds-de8ce",
+          storageBucket: "funds-de8ce.firebasestorage.app",
+          messagingSenderId: "610730236686",
+          appId: "1:610730236686:web:d52dd5c30ca1c1d441955f",
+          measurementId: "G-7WQVJVM4J5"
+        };
+      
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+
+        import {getDatabase, ref, child, get, set, update, remove} from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+        const db = getDatabase();
+
+        var name_inp = document.getElementById("name_inp");
+        var number_inp = document.getElementById("number_inp");
+        var phn_inp = document.getElementById("phn_inp");
+        let addbtn = document.getElementById("add");
+        const sample_month_data = {
+            "mar": { "name": "mar", "date": "", "note": "" ,"flag":false, "order": 1},
+            "apr": { "name": "apr", "date": "", "note": "" ,"flag":false, "order": 2},
+            "may": { "name": "may", "date": "", "note": "" ,"flag":false, "order": 3},
+            "jun": { "name": "jun", "date": "", "note": "" ,"flag":false, "order": 4},
+            "jul": { "name": "jul", "date": "", "note": "" ,"flag":false, "order": 5},
+            "aug": { "name": "aug", "date": "", "note": "" ,"flag":false, "order": 6},
+            "sep": { "name": "sep", "date": "", "note": "" ,"flag":false, "order": 7},
+            "oct": { "name": "oct", "date": "", "note": "" ,"flag":false, "order": 8},
+            "nov": { "name": "nov", "date": "", "note": "" ,"flag":false, "order": 9},
+            "dec": { "name": "dec", "date": "", "note": "" ,"flag":false, "order": 10},
+            "jan": { "name": "jan", "date": "", "note": "" ,"flag":false, "order": 11},
+            "feb": { "name": "feb", "date": "", "note": "" ,"flag":false, "order": 12}
+          };
+
+          const sample_amount = {
+            "total": 0,
+            "int_total": 0
+          };
+
+        function addfund(){
+            
+            console.log(name_inp.value, number_inp.value);
+            set(ref(db, 'funds/' + name_inp.value), {
+                name:name_inp.value,
+                no: number_inp.value,
+                phn: phn_inp.value,
+                month: sample_month_data,
+                amount: sample_amount
+            }).then(()=>{
+                alert("fund added")
+            }).catch((error)=>{
+                console.log(error);
+            })
+        }
+
+        addbtn.addEventListener("click", addfund);
+        
+      </script>
+</body>
+</html>

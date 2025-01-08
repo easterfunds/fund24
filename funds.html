@@ -4,35 +4,92 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Funds -</title>
+    <style>
+        .fund_overview{
+            background-color: rgb(210, 255, 240);
+            height: 10vh;
+            width: 100%;
+        }
+        .fund_data{
+            background-color: rgb(235, 235, 235);
+            width: 100%;
+        }
+        table{
+            width: 80%;
+        }
+    </style>
 
 </head>
 <body>
-    <h1>Funds 1</h1>
-    <form id="fundsForm">
+    <h1>Funds</h1>
+    <a href="add_new_fund.html">add new fund</a> 
+    <div class="fund_overview">
+        <h2>Total Amount : </h2>
+        <h3 id="tot_amnt"></h3>
+    </div>
+    <div class="fund_data">
+        
         <table>
             <tr>
-                <th>Name</th>
-                <td><input type="text" id="name_inp" ></td>
+                <th>Name :</th>
+                <td><p id="data_name"></p></td>
             </tr>
             <tr>
-                <th>No.</th>
-                <td><input type="number" id="number_inp" ></td>
+                <th>Phone :</th>
+                <td><p id="data_phn"></p></td>
             </tr>
             <tr>
-                <td colspan="2"><input type="button" value="done" id="add"/></td>
+                <th>No. of fund :</th>
+                <td><p id="data_no"></p></td>
+            </tr>
+            <tr>
+                <th>Total :</th>
+                <td><p id="data_total"></p></td>
+            </tr>
+            <tr>
+                <th>Months :</th>
+                <td>
+                    <ul>
+                        <li><input type="checkbox" name="" id="1" value="Mar">Mar</li>
+                        <li><input type="checkbox" name="" id="2" value="Apr">Apr</li>
+                        <li><input type="checkbox" name="" id="3" value="May">May</li>
+                        <li><input type="checkbox" name="" id="4" value="Jun">Jun</li>
+                        <li><input type="checkbox" name="" id="5" value="Jul">Jul</li>
+                        <li><input type="checkbox" name="" id="6" value="Aug">Aug</li>
+                        <li><input type="checkbox" name="" id="7" value="Sep">Sep</li>
+                        <li><input type="checkbox" name="" id="8" value="Oct">Oct</li>
+                        <li><input type="checkbox" name="" id="9" value="Nov">Nov</li>
+                        <li><input type="checkbox" name="" id="10" value="Dec">Dec</li>
+                        <li><input type="checkbox" name="" id="11" value="Jan">Jan</li>
+                        <li><input type="checkbox" name="" id="12" value="Feb">Feb</li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td><input type="button" value="save" id="updateFund"></td>
             </tr>
         </table>
-    </form>
+
+        <table>
+            <thead>
+                <th>Name</th>
+                <th>Total</th>
+                <th>Pending</th>
+            </thead>
+            <tbody id="funds_tbl">
+
+            </tbody>
+        </table>
+    </div>
+
+
+
 
     <script type="module">
-        // Import the functions you need from the SDKs you need
+
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-analytics.js";
-        // TODO: Add SDKs for Firebase products that you want to use
-        // https://firebase.google.com/docs/web/setup#available-libraries
-      
-        // Your web app's Firebase configuration
-        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+
         const firebaseConfig = {
           apiKey: "AIzaSyD-brG_FyYAiSCw571sSIrq0t01fTdDBag",
           authDomain: "funds-de8ce.firebaseapp.com",
@@ -43,32 +100,177 @@
           appId: "1:610730236686:web:d52dd5c30ca1c1d441955f",
           measurementId: "G-7WQVJVM4J5"
         };
+
+
       
-        // Initialize Firebase
+
         const app = initializeApp(firebaseConfig);
         const analytics = getAnalytics(app);
 
         import {getDatabase, ref, child, get, set, update, remove} from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
         const db = getDatabase();
 
-        var name_inp = document.getElementById("name_inp");
-        var number_inp = document.getElementById("number_inp");
-        let addbtn = document.getElementById("add");
-
-        function addfund(){
+        // var name_inp = document.getElementById("name_inp");
+        // var number_inp = document.getElementById("number_inp");
+        // var phn_inp = document.getElementById("phn_inp");
+        // let addbtn = document.getElementById("add");
+        var funds_list = [];
+        let tbody = document.getElementById('funds_tbl');
+        function getAllFunds(){
+            const dbRef = ref(db);
+            get(child(dbRef,'funds')).then((snapshot =>{
+                funds_list=[];
+                snapshot.forEach(fund => {
+                    funds_list.push(fund.val())
+                });
+                addAllFund()
+            }))
             
-            console.log(name_inp.value, number_inp.value);
-            set(ref(db, 'funds/' + name_inp.value), {
-                name:name_inp.value,
-                no: number_inp.value
-            }).then(()=>{
-                alert("fund added")
-            }).catch((error)=>{
-                console.log(error);
+        }
+        var sub_total = 0
+
+
+        document.querySelector('#updateFund').addEventListener('click', () => updateFund());
+
+
+        function select_name(name){
+            const dbRef = ref(db);
+
+            console.log(name)
+
+            get(child(dbRef,'funds/'+name)).then((snapshot =>{
+
+                    var read_name = snapshot.val().name;
+                    var read_no = snapshot.val().no;
+                    var read_phn = snapshot.val().phn;
+                    
+                    var read_month = snapshot.val().month;
+
+                    var per_fund = 100;
+                    var monthly_amnt = per_fund * read_no;
+                    var paid_months = read_month.length;
+                    var total = monthly_amnt * paid_months;
+
+                    // console.log(read_month.length);
+
+                    document.getElementById('data_name').innerText = read_name;
+                    document.getElementById('data_phn').innerText = read_phn;
+                    document.getElementById('data_no').innerText = read_no;
+                    document.getElementById('data_total').innerText = total;
+
+                    for(var i=0; i<12; i++){
+                    // console.log(i);
+                    var chk_box = document.getElementById(i+1);
+                    chk_box.checked = false;
+                       
+
+
+                }
+
+                    read_month.forEach(m =>{
+                        if(m > 0){
+                            document.getElementById(m).checked = true;
+
+                        }
+                    })
+                    
+
+            }))
+        }
+
+        const addSingleFund = (name, amount, pending) => {
+            let trow = document.createElement('tr');
+            let td1 = document.createElement('th');
+            let td2 = document.createElement('th');
+            let td3 = document.createElement('th');
+
+
+           
+            let aTag = document.createElement('a');
+            aTag.href = '#';
+            aTag.innerHTML = name;
+
+        
+            aTag.addEventListener('click', function() {
+                select_name(name); 
+            });
+
+            td1.appendChild(aTag); 
+            td2.innerHTML = amount;
+            td3.innerHTML = pending;
+
+
+
+            trow.append(td1, td2, td3); 
+            tbody.append(trow); 
+
+
+
+
+        }
+
+        
+
+        const addAllFund = () =>{
+            tbody.innerHTML = "";
+            funds_list.forEach(fund => {
+
+                var per_fund = 100;
+                var monthly_amnt = per_fund * fund.no;
+                var paid_months = fund.month.length;
+                var total = monthly_amnt * paid_months;
+
+
+                sub_total = sub_total + total;
+
+                console.log(sub_total);
+
+                document.getElementById('tot_amnt').innerText = sub_total;
+
+                
+                addSingleFund(fund.name,total,0);
             })
         }
 
-        addbtn.addEventListener("click", addfund);
+        window.addEventListener('load',getAllFunds);
+
+        
+
+        console.log(sub_total);
+
+
+        function updateFund(){
+            var selected_name = document.getElementById('data_name').innerText;
+
+            if (select_name != ''){
+                var month_list = [];
+            for(var i=0; i<12; i++){
+                // console.log(i);
+                var chk_box = document.getElementById(i+1);
+                if(chk_box.checked){
+                    var val = chk_box.value;
+
+                    month_list.push(chk_box.id);
+                }
+
+            }
+
+            update(ref(db, `funds/${selected_name}`), {
+                month: month_list
+            }).then(()=>{
+                alert("fund updated")
+            }).catch((error)=>{
+                console.log(error);
+            })
+
+        }else{
+            alert('select person')
+        }
+            }
+
+            
+
+        // addbtn.addEventListener("click", addfund);
       </script>
 </body>
 </html>
