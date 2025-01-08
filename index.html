@@ -115,7 +115,7 @@
         transform: translate(-50%, -50%);
         color: white; 
       }
-      #updateFund{
+      .update_btn{
         margin-top: 20px;
         margin-right: 20px;
         padding: 5px 10px;
@@ -124,10 +124,10 @@
         right: 0;
         position: absolute;
       }
-      #updateFund:hover{
+      .update_btn:hover{
         cursor: pointer;
       }
-      #editData{
+      .edit_btn{
         margin-top: 20px;
         margin-right: 20px;
         padding: 5px 10px;
@@ -136,7 +136,7 @@
         right: 60px;
         position: absolute;
       }
-      #editData:hover{
+      .edit_btn:hover{
         cursor: pointer;
       }
       #tbl_his{
@@ -163,29 +163,126 @@
         width: 100%;
         
       }
+      .amntxt_div{
+        width: 100%;
+        display: flex;
+        margin-bottom: 30px;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+      #tot_amnt_h1{
+        font-size: 60px;
+        font-weight: 1000;
+        color: rgb(24, 117, 3);
+      }
+      #tot_amnt_p{
+        font-size: 9px;
+        margin-top: -30px;
+      }
+      #over_tbl th{
+        font-size: 13px;
+      }
+      .popup-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+
+    /* Style for the popup content */
+    .popup-content {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        width: 300px;
+    }
+
+    /* Close button */
+    .close-btn {
+        background: red;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 5px;
+        cursor: pointer;
+        float: right;
+    }
   </style>
 </head>
 <body>
-  <h1>Tabs Example</h1>
+
+    <div class="popup-overlay" id="popup">
+      <div class="popup-content">
+          <button class="close-btn" id="closePopup">X</button>
+          <form id="fundsForm">
+              <table>
+                  <tr>
+                      <th>Name</th>
+                      <td><input type="text" id="name_inp" ></td>
+                  </tr>
+                  <tr>
+                      <th>Fund No.</th>
+                      <td><input type="number" id="number_inp" ></td>
+                  </tr>
+                  <tr>
+                      <th>Phone</th>
+                      <td><input type="text" id="phn_inp" ></td>
+                  </tr>
+                  <tr>
+                      <td colspan="2"><input type="button" value="Done"  id="submitForm"/></td>
+                  </tr>
+              </table>
+          </form>
+      </div>
+  </div>
+
   <div class="tabs">
     <div class="tab active" data-tab="over">Overview</div>
     <div class="tab" data-tab="fund">Fund</div>
     <!-- <div class="tab" data-tab="nfund">Add fund</div> -->
     <div class="tab" data-tab="int">Interest</div>
+    <div class="tab" data-tab="set">Settings</div>
   </div>
 
-  <div class="tab-content " id="over">
+  <div class="tab-content active" id="over">
     <h2>Overview</h2>
-    <p>This is the content for the first tab.</p>
+    <div class="amntxt_div">
+      <h1 id="tot_amnt_h1">0</h1>
+      <p id="tot_amnt_p">Total collection amount(25%)</p>
+    </div>
+    <table id="over_tbl">
+      <tr>
+        <th>
+          Total funds 
+        </th>
+        <td id="over_fund_no"></td>
+      </tr>
+      <tr>
+        <th>
+          Total amount without interest 
+        </th>
+        <td id="over_fund_amnt_no_int"></td>
+      </tr>
+    </table>
   </div>
-  <div class="tab-content active"  id="fund">
+  <div class="tab-content "  id="fund">
     <h2>Fund</h2>
+    <button id="openPopup">Add</button>
+
     <div class="search-container">
       <input type="text" id="search" class="search-input" placeholder="Search...">
       <div id="suggestions" class="suggestions"></div>
     </div>
-    <input type="button" value="save" id="updateFund" disabled>
-    <input type="button" value="edit" id="editData" disabled>
+    <input type="button" value="save" id="updateFund" class="update_btn" disabled>
+    <input type="button" value="edit" id="editData" class="edit_btn" disabled>
     <div id="details" class="details">Search a name to view details.</div>
     <div class="checkbox-container">
       <input type="checkbox" id="mar" data-label="Mar">
@@ -232,11 +329,27 @@
     <h2>Interest</h2>
     <p>This is the content for the second tab.</p>
   </div>
+  <div class="tab-content " id="set">
+    <h2>Settings</h2>
+    <input type="button" value="save" id="updateSettings" class="update_btn" >
+    <input type="button" value="edit" id="editSettings" class="edit_btn" >
+    <table id="settings_tbl">
+      <tr>
+        <th>1 fund</th>
+        <th><input type="text" id="inp_per_fund" disabled></th>
+      </tr>
+      <tr>
+        <th>year</th>
+        <th><input type="text" id="inp_year" disabled></th>
+      </tr>
+    </table>
+  </div>
 
   <script>
     // JavaScript to handle tab switching
     const tabs = document.querySelectorAll('.tab');
     const tabContents = document.querySelectorAll('.tab-content');
+
 
     tabs.forEach(tab => {
       tab.addEventListener('click', () => {
@@ -244,23 +357,26 @@
         tabs.forEach(t => t.classList.remove('active'));
         tabContents.forEach(content => content.classList.remove('active'));
 
-        // Add active class to clicked tab and corresponding content
         tab.classList.add('active');
         const target = document.getElementById(tab.dataset.tab);
         target.classList.add('active');
       });
     });
+
+    
+
   </script>
 
   <script type="module">
-    // Import the functions you need from the SDKs you need
+
+    const checkboxes = document.querySelectorAll('.checkbox-container input[type="checkbox"]');
+
+    checkboxes.forEach(checkbox => {
+        checkbox.disabled = true;
+    });
+
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-analytics.js";
-    // TODO: Add SDKs for Firebase products that you want to use
-    // https://firebase.google.com/docs/web/setup#available-libraries
-  
-    // Your web app's Firebase configuration
-    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
     const firebaseConfig = {
       apiKey: "AIzaSyD-brG_FyYAiSCw571sSIrq0t01fTdDBag",
       authDomain: "funds-de8ce.firebaseapp.com",
@@ -279,53 +395,145 @@
     import {getDatabase, ref, child, get, set, update, remove} from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
     const db = getDatabase();
 
-    var name_inp = document.getElementById("name_inp");
-    var number_inp = document.getElementById("number_inp");
-    let addbtn = document.getElementById("add");
 
-    function addfund(){
-        
-        console.log(name_inp.value, number_inp.value);
-        set(ref(db, 'funds/' + name_inp.value), {
-            name:name_inp.value,
-            no: number_inp.value
-        }).then(()=>{
-            alert("fund added")
-        }).catch((error)=>{
-            console.log(error);
+
+    var name_inp = document.getElementById("name_inp");
+        var number_inp = document.getElementById("number_inp");
+        var phn_inp = document.getElementById("phn_inp");
+        const sample_month_data = {
+            "mar": { "name": "mar", "date": "", "note": "" ,"flag":false, "order": 1},
+            "apr": { "name": "apr", "date": "", "note": "" ,"flag":false, "order": 2},
+            "may": { "name": "may", "date": "", "note": "" ,"flag":false, "order": 3},
+            "jun": { "name": "jun", "date": "", "note": "" ,"flag":false, "order": 4},
+            "jul": { "name": "jul", "date": "", "note": "" ,"flag":false, "order": 5},
+            "aug": { "name": "aug", "date": "", "note": "" ,"flag":false, "order": 6},
+            "sep": { "name": "sep", "date": "", "note": "" ,"flag":false, "order": 7},
+            "oct": { "name": "oct", "date": "", "note": "" ,"flag":false, "order": 8},
+            "nov": { "name": "nov", "date": "", "note": "" ,"flag":false, "order": 9},
+            "dec": { "name": "dec", "date": "", "note": "" ,"flag":false, "order": 10},
+            "jan": { "name": "jan", "date": "", "note": "" ,"flag":false, "order": 11},
+            "feb": { "name": "feb", "date": "", "note": "" ,"flag":false, "order": 12}
+          };
+
+          const sample_amount = {
+            "total": 0,
+            "int_total": 0
+          };
+
+        const fundsRef = ref(db,'funds');
+        let fundsData = {};
+        let settingsData = {};
+
+        let year_val = '';
+
+        const openPopup = document.getElementById('openPopup');
+        const closePopup = document.getElementById('closePopup');
+        const popup = document.getElementById('popup');
+
+        // Show popup when the button is clicked
+        openPopup.addEventListener('click', () => {
+            popup.style.display = 'flex';
+           /* let addbtn = document.getElementById("add");
+            if(addbtn){
+            addbtn.addEventListener("click", addfund);
+
+            }*/
+
+        });
+
+        // Hide popup when the close button is clicked
+        closePopup.addEventListener('click', () => {
+            popup.style.display = 'none';
+        });
+
+        // Optional: Hide popup when clicking outside the popup content
+        window.addEventListener('click', (e) => {
+            if (e.target === popup) {
+                popup.style.display = 'none';
+            }
+        });
+
+        document.body.addEventListener("click", function (event) {
+          if (event.target && event.target.id === "submitForm") {
+            addfund();
+
+          }
+        });
+
+        get(fundsRef)
+        .then((snapshot) => {
+          if (snapshot.exists()) {
+            fundsData = snapshot.val() || {};
+            settingsData = fundsData['settings'];
+          
+            year_val = settingsData['year'];
+          } else {
+            console.log("No data available");
+          }
         })
-    }
+        .catch((error) => {
+          console.error("Error fetching data:", error);
+        });
+
+      function addfund(){
+          set(ref(db, 'funds/'+year_val+'/' + name_inp.value), {
+              name:name_inp.value,
+              no: number_inp.value,
+              phn: phn_inp.value,
+              month: sample_month_data,
+              amount: sample_amount
+          }).then(()=>{
+              alert("fund added")
+          }).catch((error)=>{
+              console.log(error);
+          })
+      }
+
 
     //addbtn.addEventListener("click", addfund);
 
 
-    // DOM Elements
     const searchInput = document.getElementById('search');
     const suggestionsContainer = document.getElementById('suggestions');
     const detailsContainer = document.getElementById('details');
     const fundHist = document.getElementById('fund_hist');
+    const per_fund_edt = document.getElementById('inp_per_fund');
+    const year_edt = document.getElementById('inp_year');
 
-// get all 
-    const fundsRef = ref(db,'funds');
-    let fundsData = {};
+    // get all 
+    let fundsData_raw = {};
+    let overviewData = {};
     let name_ = '';
+    let per_fund_val = '';
 
     get(fundsRef)
-  .then((snapshot) => {
-    if (snapshot.exists()) {
-      //const fundsData = snapshot.val();
-      fundsData = snapshot.val() || {};
-      //console.log(fundsData); // Logs the retrieved data
-    } else {
-      console.log("No data available");
-    }
-  })
-  .catch((error) => {
-    console.error("Error fetching data:", error);
-  });
-    
+    .then((snapshot) => {
+      if (snapshot.exists()) {
+        fundsData_raw = snapshot.val() || {};
+        
+        settingsData = fundsData_raw['settings'];
+        per_fund_edt.value = settingsData['per_fund'];
+        per_fund_val = settingsData['per_fund'];
+        year_edt.value = settingsData['year'];
+        year_val = settingsData['year'];
 
-    // Update suggestions
+        fundsData = fundsData_raw[year_val];
+
+        overviewData = fundsData_raw[year_val]['overview'];
+        document.getElementById('tot_amnt_h1').innerText = overviewData['total_amnt_int'];
+        document.getElementById('over_fund_amnt_no_int').innerText = overviewData['total_amnt'];
+        document.getElementById('over_fund_no').innerText = overviewData['total_funds'];
+
+
+      } else {
+        console.log("No data available");
+      }
+    })
+    .catch((error) => {
+      console.error("Error fetching data:", error);
+    });
+    
+    // search suggestions
     searchInput.addEventListener('input', () => {
       const query = searchInput.value.toLowerCase();
       suggestionsContainer.innerHTML = '';
@@ -343,11 +551,11 @@
 
                 const upd = document.getElementById("updateFund");
             
-                upd.disabled = !upd.disabled;
+                upd.disabled = false;
 
                 const edt = document.getElementById("editData");
             
-                edt.disabled = !edt.disabled;
+                edt.disabled = false;
                 
             } );
             suggestionsContainer.appendChild(suggestion);
@@ -365,10 +573,11 @@
       const int_tot_ = details['amount']['int_total'];
 
 
-    const checkboxes = document.querySelectorAll('.checkbox-container input[type="checkbox"]');
 
     checkboxes.forEach(checkbox => {
         checkbox.checked = false;
+        checkbox.disabled = false;
+
     });
 
     fundHist.innerHTML = '';
@@ -497,13 +706,26 @@
     }
 
     document.querySelector('#updateFund').addEventListener('click', () => updateFund());
+    document.querySelector('#updateSettings').addEventListener('click', () => updateSettings());
+
     document.querySelector('#editData').addEventListener('click', () => {
         const table = document.getElementById('tbl_data');
         const inputs = table.querySelectorAll('input');
         inputs.forEach(input => {
         input.disabled = false;
+      });
     });
+
+    document.querySelector('#editSettings').addEventListener('click', () => {
+      const table = document.getElementById('settings_tbl');
+      const inputs = table.querySelectorAll('input');
+      inputs.forEach(input => {
+      input.disabled = false;
     });
+  });
+
+  // update fund
+
     function updateFund(){
 
             const table = document.getElementById('tbl_data');
@@ -523,7 +745,7 @@
 
 
 
-            const amnt = no_funds * 100;
+            const amnt = no_funds * per_fund_val;
             const tot = amnt * paid_month_count;
             const tot_int = tot + tot * 25/100;
 
@@ -532,8 +754,15 @@
             fundsData[name_]['phn'] = ph_edt_val_;
             fundsData[name_]['no'] = no_edt_val_;
 
+            let int_tot_ = 0;
+            let tot_no_int = 0;
+            let tot_funds = 0;
+
+
+            //const ovr_updated_amnt = overviewData['total_amnt_int'] + tot_int;
+            
         
-            update(ref(db, `funds/${name_}`), {
+            update(ref(db, `funds/${year_val}/${name_}`), {
                 month: fundsData[name_]['month'],
                 amount: amnt_dict,
                 no:no_edt_val_,
@@ -545,11 +774,52 @@
                 console.log(error);
             })
 
-            showDetails(name_);
-            showMonthDetails(name_);
+            //update overview data
+            get(fundsRef)
+            .then((snapshot) => {
+              if (snapshot.exists()) {
+                fundsData_raw = snapshot.val() || {};
+                
+                settingsData = fundsData_raw['settings'];
+                year_val = settingsData['year'];
+
+                fundsData = fundsData_raw[year_val];
+
+                Object.keys(fundsData).forEach(key =>{
+                  if (key != "overview") {
+                    //console.log(fundsData[key]['amount']['int_total'])
+                    int_tot_ = int_tot_ + fundsData[key]['amount']['int_total'];
+                    tot_no_int = tot_no_int + fundsData[key]['amount']['total'];
+                    tot_funds = tot_funds + Number(fundsData[key]['no']);
+
+
+                    
+                  }
+                })
+
+                document.getElementById('tot_amnt_h1').innerText = int_tot_;
+                document.getElementById('over_fund_amnt_no_int').innerText = tot_no_int;
+                document.getElementById('over_fund_no').innerText = tot_funds;
+
+
+                update(ref(db, `funds/${year_val}/overview`), {
+                    total_amnt_int: int_tot_,
+                    total_amnt: tot_no_int,
+                    total_funds: tot_funds
+
+                })
+
+              } else {
+                console.log("No data available");
+              }
+            })
+
+
 
             
-            
+
+            showDetails(name_);
+            showMonthDetails(name_);
 
         }
 
@@ -569,19 +839,49 @@
         const formattedDateTime = `${day}-${month}-${year} ${formattedHours}:${minutes} ${amPm}`;
 
         const inp_note_val = document.getElementById('inpNote').value;
-        console.log(inp_note_val);
 
         fundsData[name_]['month'][checkbox.id]['flag'] = checkbox.checked ? true : false;
         fundsData[name_]['month'][checkbox.id]['date'] = formattedDateTime;
         fundsData[name_]['month'][checkbox.id]['note'] = inp_note_val;
-        console.log(fundsData[name_]['month'])
         }
     
-        // Select all checkboxes and add event listeners
-        const checkboxes = document.querySelectorAll('.checkbox-container input[type="checkbox"]');
-        checkboxes.forEach((checkbox) => {
+
+    checkboxes.forEach((checkbox) => {
         checkbox.addEventListener('change', handleCheckboxChange);
-        });
+    });
+
+    //update settings
+    function updateSettings(){
+
+          const table = document.getElementById('settings_tbl');
+          const inputs = table.querySelectorAll('input');
+                  inputs.forEach(input => {
+                  input.disabled = true;
+              });
+
+          const per_fund_edt_val_ = per_fund_edt.value;
+          const year_edt_val_ = year_edt.value;
+
+          
+          settingsData['per_fund'] = per_fund_edt_val_;
+          settingsData['year'] = year_edt_val_;
+
+          per_fund_val = per_fund_edt_val_;
+          year_val = year_edt_val_;
+
+      
+          update(ref(db, `funds/settings`), {
+              per_fund: per_fund_edt_val_,
+              year: year_edt_val_
+
+          }).then(()=>{
+              alert("settings updated")
+          }).catch((error)=>{
+              console.log(error);
+          })
+
+
+      }
   </script>
   
 </body>

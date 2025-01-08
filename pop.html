@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Popup Form</title>
+    <style>
+        /* Style for the popup overlay */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        /* Style for the popup content */
+        .popup-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            width: 300px;
+        }
+
+        /* Close button */
+        .close-btn {
+            background: red;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            float: right;
+        }
+    </style>
+</head>
+<body>
+    <button id="openPopup">Add</button>
+
+    <!-- Popup container -->
+    <div class="popup-overlay" id="popup">
+        <div class="popup-content">
+            <button class="close-btn" id="closePopup">X</button>
+            <form id="fundsForm">
+                <table>
+                    <tr>
+                        <th>Name</th>
+                        <td><input type="text" id="name_inp" ></td>
+                    </tr>
+                    <tr>
+                        <th>Fund No.</th>
+                        <td><input type="number" id="number_inp" ></td>
+                    </tr>
+                    <tr>
+                        <th>Phone</th>
+                        <td><input type="text" id="phn_inp" ></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2"><input type="button" value="Done" id="submitForm"/></td>
+                    </tr>
+                </table>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Get references to elements
+        const openPopup = document.getElementById('openPopup');
+        const closePopup = document.getElementById('closePopup');
+        const popup = document.getElementById('popup');
+
+        // Show popup when the button is clicked
+        openPopup.addEventListener('click', () => {
+            popup.style.display = 'flex';
+        });
+
+        // Hide popup when the close button is clicked
+        closePopup.addEventListener('click', () => {
+            popup.style.display = 'none';
+        });
+
+        // Optional: Hide popup when clicking outside the popup content
+        window.addEventListener('click', (e) => {
+            if (e.target === popup) {
+                popup.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -78,10 +78,29 @@
             "int_total": 0
           };
 
-        function addfund(){
+        const fundsRef = ref(db,'funds');
+        let fundsData = {};
+        let settingsData = {};
+
+        let year_val = '';
+
+          get(fundsRef)
+          .then((snapshot) => {
+            if (snapshot.exists()) {
+              fundsData = snapshot.val() || {};
+              settingsData = fundsData['settings'];
             
-            console.log(name_inp.value, number_inp.value);
-            set(ref(db, 'funds/' + name_inp.value), {
+              year_val = settingsData['year'];
+            } else {
+              console.log("No data available");
+            }
+          })
+          .catch((error) => {
+            console.error("Error fetching data:", error);
+          });
+
+        function addfund(){
+            set(ref(db, 'funds/'+year_val+'/' + name_inp.value), {
                 name:name_inp.value,
                 no: number_inp.value,
                 phn: phn_inp.value,
